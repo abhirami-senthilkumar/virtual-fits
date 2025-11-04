@@ -4,6 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 import tryonRoutes from "./routes/tryon.js";
 import uploadRoutes from "./routes/uploads.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 const app = express();
@@ -30,7 +32,10 @@ app.options(/.*/, (req, res) => {
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(morgan("dev"));
-app.use("/uploads", express.static("uploads"));
+// app.use("/uploads", express.static("/uploads"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ✅ Step 4: Routes
 app.get("/", (req, res) => {
