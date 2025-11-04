@@ -3,14 +3,16 @@ import axios from "axios";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 const router = express.Router();
 
 const LIGHTX_API_KEY = process.env.LIGHTX_API_KEY;
 const BASE_URL = process.env.LIGHTX_BASE_URL;
-router.get('/', async (req, res) => {
-    res.send("Tryon API");
-})
+
+// 🟢 Health check
+router.get("/", (req, res) => {
+    res.send("Tryon API working ✅");
+});
+
 // 1️⃣ Create order (Try-on request)
 router.post("/", async (req, res) => {
     try {
@@ -19,13 +21,16 @@ router.post("/", async (req, res) => {
         if (!modelImageUrl || !garmentImageUrl) {
             return res.status(400).json({ message: "Both model and garment images are required" });
         }
+
         const data = {
-            "imageUrl": modelImageUrl,
-            "styleImageUrl": garmentImageUrl, // already a URL from assets
+            imageUrl: modelImageUrl,
+            styleImageUrl: garmentImageUrl,
         };
-        console.log("data", data);
+
+        console.log("🟢 Sending Try-On Request:", data);
+
         const response = await axios.post(
-            `${BASE_URL}`,
+            BASE_URL,
             JSON.stringify(data),
             {
                 headers: {
@@ -35,7 +40,7 @@ router.post("/", async (req, res) => {
             }
         );
 
-        console.log("Order Response:", response.data);
+        console.log("✅ LightX Order Response:", response.data);
 
         res.status(200).json({
             message: "Order created successfully",
@@ -43,7 +48,7 @@ router.post("/", async (req, res) => {
             response: response.data,
         });
     } catch (error) {
-        console.error("Error creating order:", error.response?.data || error.message);
+        console.error("❌ Error creating order:", error.response?.data || error.message);
         res.status(500).json({
             message: "Failed to create order",
             error: error.response?.data || error.message,
@@ -66,18 +71,18 @@ router.post("/result", async (req, res) => {
             {
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": process.env.LIGHTX_API_KEY,
+                    "x-api-key": LIGHTX_API_KEY,
                 },
             }
         );
 
-        console.log("✅ LightX Response:", response.data);
+        console.log("🟢 LightX Result:", response.data);
         res.json({
             message: "Result fetched successfully",
             response: response.data,
         });
     } catch (err) {
-        console.error("❌ Error details:", err.response?.data || err.message);
+        console.error("❌ Error fetching result:", err.response?.data || err.message);
         res.status(500).json({
             message: "Failed to fetch try-on result",
             error: err.response?.data || err.message,
