@@ -1,30 +1,27 @@
-import express from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
 
 const router = express.Router();
 
-// ✅ Ensure uploads folder exists
-const uploadDir = "./uploads";
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) =>
-        cb(null, Date.now() + path.extname(file.originalname)),
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
 });
 
 const upload = multer({ storage });
 
-// ✅ POST /api/upload
-router.post("/", upload.single("image"), (req, res) => {
-    // Auto-detect the correct base URL
-    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
-    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
-    console.log("📸 Uploaded Image URL:", fileUrl);
+router.post('/', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-    res.json({ imageUrl: fileUrl });
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    res.json({ imageUrl });
 });
 
 export default router;
